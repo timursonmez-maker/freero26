@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Freerotation 2026</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,200;0,9..144,400;1,9..144,200&family=Martian+Mono:wght@300;400&display=swap');
+:root {
+  --bg:#060809; --s1:#0b0f13; --border:#16202a; --border2:#1e2d3c;
+  --a1:#8ecfaa; --a2:#c9a46a; --a3:#7abbe0; --a4:#c98bb0; --a5:#b2c6b4;
+  --text:#afc0ca; --dim:#485f70; --mid:#7090a0; --white:#dce8e4;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Martian Mono',monospace;font-size:11px;line-height:1.7;}
+.wrap{max-width:780px;margin:0 auto;padding:52px 24px 100px;}
+header{margin-bottom:44px;}
+.eyebrow{font-size:8px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim);margin-bottom:14px;}
+h1{font-family:'Fraunces',serif;font-size:clamp(32px,7vw,54px);font-weight:200;color:var(--white);line-height:1.05;letter-spacing:-.02em;}
+h1 em{font-style:italic;color:var(--a1);}
+.matrix-wrap{margin:36px 0 52px;border:1px solid var(--border);border-radius:4px;background:var(--s1);overflow:hidden;}
+.matrix-top{padding:12px 16px 10px;border-bottom:1px solid var(--border);font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);display:flex;justify-content:space-between;align-items:center;}
+.matrix-top em{color:var(--a1);font-style:normal;}
+#matrixSvg{display:block;width:100%;}
+#matrixTip{position:absolute;background:var(--s1);border:1px solid var(--border2);border-radius:3px;padding:7px 11px;font-size:11px;color:var(--text);pointer-events:none;opacity:0;transition:opacity .1s;white-space:nowrap;z-index:10;line-height:1.6;}
+.matrix-legend{display:flex;gap:16px;flex-wrap:wrap;padding:10px 16px 12px;border-top:1px solid var(--border);}
+.ml-item{display:flex;align-items:center;gap:7px;font-size:9px;color:var(--dim);letter-spacing:.04em;}
+.ml-dot{border-radius:50%;flex-shrink:0;}
+.ml-bar{height:7px;border-radius:3px;width:70px;}
+.mx-ctrl{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start;padding:12px 16px 12px;border-bottom:1px solid var(--border);background:#090d12;}
+.mx-group{display:flex;flex-direction:column;gap:5px;min-width:160px;flex:1;}
+.mx-label{font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);}
+.mx-row{display:flex;gap:5px;align-items:center;flex-wrap:wrap;}
+.rbtn{font-size:9px;color:var(--dim);background:var(--bg);border:1px solid var(--border);border-radius:2px;padding:3px 8px;cursor:pointer;font-family:'Martian Mono',monospace;letter-spacing:.04em;transition:all .12s;}
+.rbtn.on{background:#0d1e20;color:var(--a1);border-color:var(--a1);}
+.rbtn:hover{border-color:var(--border2);color:var(--mid);}
+.mx-slider-row{display:flex;align-items:center;gap:8px;font-size:9px;color:var(--dim);}
+.mx-slider-row input[type=range]{flex:1;accent-color:var(--a1);height:3px;}
+.mx-time-lbl{font-size:9px;color:var(--mid);letter-spacing:.04em;margin-top:2px;}
+.ff-row{display:flex;align-items:center;gap:8px;}
+.ff-toggle{width:34px;height:18px;border-radius:9px;background:var(--border2);cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;border:none;outline:none;}
+.ff-toggle.on{background:#1D9E75;}
+.ff-toggle::after{content:'';position:absolute;width:12px;height:12px;border-radius:50%;background:#afc0ca;top:3px;left:3px;transition:left .2s;}
+.ff-toggle.on::after{left:19px;background:#fff;}
+.sec{font-size:8px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim);margin:44px 0 14px;display:flex;align-items:center;gap:12px;}
+.sec::after{content:'';flex:1;height:1px;background:var(--border);}
+.anchor{background:#091410;border:1px solid #1a3025;border-left:3px solid var(--a1);border-radius:3px;padding:20px 20px 16px;margin-bottom:36px;}
+.anchor-lbl{font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--a1);margin-bottom:8px;}
+.anchor-q{font-family:'Fraunces',serif;font-size:15px;font-weight:200;font-style:italic;color:#b8d0bc;line-height:1.55;margin-bottom:16px;}
+.card{border:1px solid var(--border);border-radius:3px;margin-bottom:10px;overflow:hidden;transition:border-color .18s;}
+.card:hover{border-color:var(--border2);}
+.card-head{padding:15px 18px 12px;}
+.aname{font-family:'Fraunces',serif;font-size:17px;font-weight:200;color:var(--white);letter-spacing:-.01em;margin-bottom:3px;}
+.rec{font-family:'Fraunces',serif;font-style:italic;font-size:12px;margin:4px 0 8px;line-height:1.4;}
+.g{color:var(--a1);}.b{color:var(--a3);}.s{color:var(--a2);}.r{color:var(--a4);}.w{color:var(--a5);}
+.why{font-size:10px;color:var(--dim);line-height:1.7;}
+.links{background:#080c10;border-top:1px solid var(--border);padding:8px 18px 10px;display:flex;flex-wrap:wrap;gap:6px;}
+.btn{display:inline-flex;align-items:center;gap:4px;font-family:'Martian Mono',monospace;font-size:8px;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;padding:4px 9px;border-radius:2px;transition:background .14s,border-color .14s;white-space:nowrap;}
+.btn.g{color:var(--a1);border:1px solid #192e20;background:#070e09;}.btn.g:hover{background:#0c1e11;border-color:var(--a1);}
+.btn.b{color:var(--a3);border:1px solid #162438;background:#07090e;}.btn.b:hover{background:#0b1320;border-color:var(--a3);}
+.btn.s{color:var(--a2);border:1px solid #2c1f0e;background:#0e0c07;}.btn.s:hover{background:#1a1409;border-color:var(--a2);}
+.btn.r{color:var(--a4);border:1px solid #2c1624;background:#0e0709;}.btn.r:hover{background:#1c0c14;border-color:var(--a4);}
+.btn.w{color:var(--a5);border:1px solid #222e24;background:#090f0a;}.btn.w:hover{background:#111c12;border-color:var(--a5);}
+.wof-box{background:#081018;border:1px solid #182840;border-left:3px solid var(--a3);border-radius:3px;padding:14px 16px;margin-bottom:10px;font-size:10px;color:#5a8aaa;line-height:1.8;}
+footer{margin-top:60px;padding-top:16px;border-top:1px solid var(--border);font-size:8px;color:var(--dim);letter-spacing:.1em;line-height:2.2;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Freerotation 2026 · Complete Listening Guide</div>
+  <h1>All artists,<br>ranked for <em>you.</em></h1>
+</header>
+
+<div class="matrix-wrap" style="position:relative;">
+  <div id="matrixTip"></div>
+  <div class="matrix-top">
+    <span>Lineup map — 4 axes</span>
+    <span style="color:var(--dim);">X = straight↔broken · Y = ambient↔hard · colour = warm↔cold · size = recognition</span>
+  </div>
+  <div class="mx-ctrl">
+    <div class="mx-group">
+      <div class="mx-label">#freeroyfactor</div>
+      <div class="ff-row">
+        <button class="ff-toggle" id="ffToggle"></button>
+        <span style="font-size:9px;color:var(--dim);">shift to likely FR26 sound</span>
+      </div>
+    </div>
+    <div class="mx-group">
+      <div class="mx-label">Room filter</div>
+      <div class="mx-row">
+        <button class="rbtn on" data-room="all">All</button>
+        <button class="rbtn" data-room="1">KITH</button>
+        <button class="rbtn" data-room="2">Matrix</button>
+        <button class="rbtn" data-room="3">Sammy's</button>
+        <button class="rbtn" data-room="4">Teulu</button>
+        <button class="rbtn" data-room="5">Dreamtime</button>
+      </div>
+    </div>
+    <div class="mx-group" style="min-width:200px;">
+      <div class="mx-label">Time of set</div>
+      <div class="mx-slider-row">
+        <span>Opening</span>
+        <input type="range" id="timeSlider" min="0" max="100" value="50">
+        <span>Closing</span>
+      </div>
+      <div class="mx-time-lbl" id="timeLbl">Any time</div>
+    </div>
+    <div class="mx-group" style="min-width:200px;">
+      <div class="mx-label">x-OO filter <span style="color:var(--a2);letter-spacing:0;font-size:7px;text-transform:none;">(Expected Oi-Oi score)</span></div>
+      <div class="mx-slider-row">
+        <span>Low</span>
+        <input type="range" id="ooSlider" min="0" max="100" value="0">
+        <span>High</span>
+      </div>
+      <div class="mx-time-lbl" id="ooLbl" style="color:var(--a2);">Showing all</div>
+    </div>
+  </div>
+  <svg id="matrixSvg" viewBox="0 0 720 520" xmlns="http://www.w3.org/2000/svg"></svg>
+  <div class="matrix-legend">
+    <div class="ml-item"><div class="ml-dot" style="width:11px;height:11px;background:#1D9E75;"></div>your zone</div>
+    <div class="ml-item"><div class="ml-dot" style="width:11px;height:11px;background:#7F77DD;"></div>likely yes</div>
+    <div class="ml-item"><div class="ml-dot" style="width:10px;height:10px;background:#888780;opacity:.6;"></div>conditional</div>
+    <div class="ml-item"><span>warm</span><div class="ml-bar" style="background:linear-gradient(to right,#C9844A,#7abbe0);"></div><span>cold</span></div>
+    <div class="ml-item" style="color:var(--dim);opacity:.6;">dashed = general sound · solid = freeroyfactor</div>
+  </div>
+</div>
+
+<div class="anchor">
+  <div class="anchor-lbl">▸ Your anchor — Sybil (syberkid / voidspore)</div>
+  <div class="anchor-q">"A dive into the ocean — flowing between psychedelia of the 70s, 90s, present-day and beyond. A modern take on 90s chillout mix CDs, a meditation on the ocean, a sun-soaked holographic daydream."</div>
+  <div class="links" style="background:transparent;border:none;padding:0;margin-top:4px;">
+    <a class="btn g" href="https://soundcloud.com/syberkid/la-nature" target="_blank">↗ La Nature 2024 — her favourite, 3hr</a>
+    <a class="btn g" href="https://soundcloud.com/syberkid/mostra" target="_blank">↗ Mostra 2024 — IDM/breaks/groovy</a>
+    <a class="btn b" href="https://soundcloud.com/syberkid/music-room" target="_blank">↗ Music Room Melbourne — warm, intimate</a>
+    <a class="btn b" href="https://soundcloud.com/syberkid/sustain-release" target="_blank">↗ Sustain Release Yr11 — deep before Donato Dozzy</a>
+    <a class="btn s" href="https://soundcloud.com/syberkid/sustain-release-ambient" target="_blank">↗ Sustain Release ambient — 3hr time &amp; space</a>
+    <a class="btn s" href="https://soundcloud.com/syberkid/sets/live-recordings" target="_blank">↗ Full recordings archive</a>
+  </div>
+</div>
+
+<div class="wof-box">
+  <strong style="color:var(--a3);">The Wheel of Fortune slot — CCL, Marylou, Nono Gigsta &amp; rRoxymore</strong><br>
+  All four appear in this guide. Based on CCL's description of their last FR set ("imagining a psychic electric swamp and how one would levitate through it") and the fact that Nono Gigsta's FR2024 set began and ended with Björk and is the most lauded mix of 2024, this is the centrepiece of the weekend for you. Plan everything else around it.
+</div>
+
+<div class="sec">Essential — start here</div>
+
+<div class="card">
+  <div class="card-head">
+    <div class="aname">Nono Gigsta</div>
+    <div class="rec g">Freerotation 2024: The House of Crocodiles Pt.2</div>
+    <div class="why">The single most celebrated mix of 2024, named independently by RA, DJ Mag, Mixmag and Passion of the Weiss. Starts with Björk's "I Miss You", ends with Led Zeppelin's "Whole Lotta Love", and in between folds nature documentaries, R&amp;B, dubbed horns and soundsystem bass into something that defies accounting for. Nono Gigsta holds a PhD on the "unspeakability" of electronic music — the set sounds like that research in practice. She returns to FR26 in the Wheel of Fortune slot.</div>
+  </div>
+  <div class="links">
+    <a class="btn g" href="https://soundcloud.com/gigstab/freerotation-2024-the-house-of-crocodiles-part-2-live-recording" target="_blank">↗ House of Crocodiles Pt.2 — FR2024</a>
+    <a class="btn b" href="https://soundcloud.com/gigstab/freerotation-2018-the-house-of-crocodiles-live-recording" target="_blank">↗ House of Crocodiles Pt.1 — FR2018</a>
+    <a class="btn s" href="https://soundcloud.com/gigstab" target="_blank">↗ Full archive</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-head">
+    <div class="aname">CCL</div>
+    <div class="rec g">Freerotation 2024 (Animalia) + "A Night in the Skull Discotheque"</div>
+    <div class="why">CCL on their FR2024 set: "sexy, wonky, trippy — imagining a psychic electric swamp and how one would levitate through it." The Skull Discotheque mixtape (T4T LUV NRG) is a 90-minute excavation of proto-dubstep from the late 70s to 2000, described as "a majestic haunted dancehall." Self-described practice: "liquefaction of rhythmic and melodic matter — trip-no, dub-core, cowgirl-breaks, drum &amp; face." One of the most serious selectors working. In the Wheel of Fortune slot.</div>
+  </div>
+  <div class="links">
+    <a class="btn g" href="https://soundcloud.com/animalia-label/anilive-fifty-seven-ccl-freerotation" target="_blank">↗ CCL @ Freerotation 2024 (Animalia)</a>
+    <a class="btn g" href="https://soundcloud.com/t4tluvnrg/a-night-in-the-skull-discotheque-ccl" target="_blank">↗ A Night in the Skull Discotheque (T4T LUV NRG)</a>
+    <a class="btn b" href="https://soundcloud.com/ccl-url/liquidtime-radio-015" target="_blank">↗ liquidtime radio 015</a>
+    <a class="btn b" href="https://soundcloud.com/boilerroom/ccl-boiler-room-berlin-2023" target="_blank">↗ Boiler Room Berlin 2023</a>
+    <a class="btn s" href="https://soundcloud.com/ccl-url" target="_blank">↗ Full SoundCloud archive</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-head">
+    <div class="aname">Steevio &amp; Suzybee</div>
+    <div class="rec g">Steevio live modular sets on Bandcamp + SoundCloud</div>
+    <div class="why">Steevio built Freerotation. He performs live on a modular rig he calls Keith Emerson-esque in scale. His own words: "I got bored of the same 4/4 motifs. I wanted deeper, more hypnotic, tripped-out stuff." Works microtonally and in just intonation — slippery melodies, subtly broken beats, afro-latin undertones. One-take live improvisations. The Modular Techno series on Mindtours is the production entry point; his SoundCloud has the live recordings.</div>
+  </div>
+  <div class="links">
+    <a class="btn g" href="https://steevio.bandcamp.com/" target="_blank">↗ Steevio Bandcamp — full discography</a>
+    <a class="btn g" href="https://soundcloud.com/steevio/steevio-live-freerotation-2022" target="_blank">↗ Steevio live @ Freerotation 2022</a>
+    <a class="btn b" href="https://soundcloud.com/steevio/modular-techno-vol3-steevio" target="_blank">↗ Modular Techno Vol.3</a>
+    <a class="btn b" href="https://soundcloud.com/steevio/steevio-live-houghton-2023" target="_blank">↗ Steevio live @ Houghton 2023</a>
+    <a class="btn s" href="https://soundcloud.com/steevio" target="_blank">↗ Full SoundCloud — live improvs archive</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-head">
+    <div class="aname">Jane Fitz</div>
+    <div class="rec g">RA Live @ Houghton 2025 + Bonanza closing 2024 + Japan Rural 2024</div>
+    <div class="why">A DJ's DJ. Sets are "a deep and winding journey between techno, acid, abstract experimental and ambient — often stretching for multiple hours." Committed vinyl digger. Her Japan Rural b2b (2024) tracklist includes Konduku, Rhythm &amp; Sound, Wave Arising and dub techno deep house — a precise overlap with your territory. The RA Live Houghton 2025 (sunrise, 3 hours) is the best recent entry point.</div>
+  </div>
+  <div class="links">
+    <a class="btn g" href="https://soundcloud.com/resident-advisor/janefitz-houghton-25" target="_blank">↗ RA Live — Houghton 2025 (sunrise, 3hr)</a>
+    <a class="btn g" href="https://soundcloud.com/houghton-festival/recorded-at-houghton-jane-fitz" target="_blank">↗ Houghton 2024</a>
+    <a class="btn b" href="https://soundcloud.com/riohostel/rio-006-jane-fitz-recorded-live-at-bonanza-2024" target="_blank">↗ Bonanza 2024 — Sunday night closing</a>
+    <a class="btn s" href="https://soundcloud.com/rural_jp/rural2024-jane-fitz-akiram-en" target="_blank">↗ Rural Japan b2b AKIRAM EN 2024</a>
+    <a class="btn s" href="https://soundcloud.com/janefitz" target="_blank">↗ Full SoundCloud archive</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-head">
+    <div class="aname">Azu Tiwaline <span style="font-size:10px;color:var(--dim)">b2b Forest Drive West</span></div>
+    <div class="rec g">Crack Mix 397 + "Fluids in Motion" EP (Livity Sound) + Lentekabinet 2024</div>
+    <div class="why">Tunisian-French, living between the Sahara and France. Draws on Berber and transe music, dub and polyrhythms. Ideal listening: barefoot outdoors, quadraphonic subs, head in the sky. The Livity Sound EP with Forest Drive West ranges "from pure ambience through to spring-loaded 4/4, with a focus on minimalism and dub-spirited spatial sound design." Their b2b at FR26 is a different proposition to either solo — the overlap zone is where you want to be.</div>
+  </div>
+  <div class="links">
+    <a class="btn g" href="https://soundcloud.com/crackmagazine/crack-mix-397-azu-tiwaline" target="_blank">↗ Crack Mix 397 — "dancing under the stars"</a>
+    <a class="btn g" href="https://soundcloud.com/dkmntl/azu-tiwaline-at-lentekabinet-2024" target="_blank">↗ Lentekabinet 2024 (Dekmantel)</a>
+    <a class="btn b" href="https://soundcloud.com/livity-sound/azu-tiwaline-forest-drive-west-fluids-in-motion-i" target="_blank">↗ "Fluids in Motion I" — Livity Sound</a>
+    <a class="btn s" href="https://azutiwaline.bandcamp.com/" target="_blank">↗ Full discography — Bandcamp</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-head">
+    <div class="aname">Konduku</div>
+    <div class="rec g">RA Podcast 967 — Dec 2024 + Houghton 2025</div>
+    <div class="why">RA: "distinctly angled rhythms, favouring subtle textures over hooks and riffs." Known for moving De School to tears. RA.967 is 90 minutes of "long layered blends, locked grooves and spine-tingling atmospherics." His 2019 Gegek EP is UK beat-science territory à la Peverelist; his 2023 Hayal EP goes deep Nobu-core techno. Neither is hard. Oblique, psychedelic, groove-first — the rhythm is the emotion.</div>
+  </div>
+  <div class="links">
+    <a class="btn g" href="https://soundcloud.com/resident-advisor/ra967-konduku" target="_blank">↗ RA Podcast 967 — Dec 2024</a>
+    <a class="btn b" href="https://soundcloud.com/houghton-festival/recorded-at-houghton-konduku-2025" target="_blank">↗ Houghton 2025</a>
+    <a class="btn b" href="https://soundcloud.com/boilerroom/konduku-boiler-room-amsterdam-2022" target="_blank">↗ Boiler Room Amsterdam 2022</a>
+    <a class="btn s" href="https://konduku.bandcamp.com/" target="_blank">↗ Bandcamp — Gegek EP + Hayal EP</a>
+    <a class="btn s" href="https://soundcloud.com/kondukukonduku/sets/mixes" target="_blank">↗ Full mixes archive</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-head">
+    <div class="aname">Joe Ellis</div>
+    <div class="rec g">Freerotation 2024 + FR2018 (UntilMyHeartStops label)</div>
+    <div class="why">Freerotation resident — one of the core Welsh crew that built the festival with Steevio. Steevio's exact words: "Why is this guy not a famous DJ? He just seems to see through the music and see what a lot of other people can't see." Behind UntilMyHeartStops and Lamassu labels. Very little internet footprint; the FR recordings on the label SoundCloud are the direct way in.</div>
+  </div>
+  <div class="links">
+    <a class="btn g" href="https://soundcloud.com/untilmyheartstops/joe-ellis-freerotation-2024" target="_blank">↗ Joe Ellis @ Freerotation 2024</a>
+    <a class="btn b" href="https://soundcloud.com/untilmyheartstops/joe-ellis-freerotation-2018" target="_blank">↗ Joe Ellis @ Freerotation 2018</a>
+    <a class="btn b" href="https://soundcloud.com/untilmyheartstops/joe-ellis-lamassu-002" target="_blank">↗ Lamassu 002 — production</a>
+    <a class="btn s" href="https://soundcloud.com/untilmyheartstops" target="_blank">↗ UntilMyHeartStops label SoundCloud</a>
+  </div>
+</div>
+
+<div class="sec">Very likely — investigated and earned</div>
+
+<div class="card">
+  <div class="card-head">
+    <div class="aname">Marylou</div>
+    <div class="rec b">Hessle Audio podcast 102 + Boiler Room London 2023 + Dekmantel 2024</div>
+    <div class="why">French selector, Hessle Audio family. Warm, broken rhythms and a genuine feel for dancefloor arc. The Hessle podcast is the purest snapshot of her aesthetic — patient, layered, no cheap moves. Boiler Room London 2023 shows her in a bigger room but she still doesn't rush. Dekmantel 2024 confirms she's graduated to festival headliner territory while staying humble in approach.</div>
+  </div>
+  <div class="links">
+    <a class="btn b" href="https://soundcloud.com/hessleaudio/hessle-audio-podcast-102-marylou" target="_blank">↗ Hessle Audio Podcast 102</a>
+    <a class="btn b" href="https://soundcloud.com/boilerroom/marylou-boiler-room-london-2023" target="_blank">↗ Boiler Room London 2023</a>
+    <a class="btn s" href="https://soundcloud.com/dkmntl/marylou-dekmantel-festival-2024" target="_blank">↗ Dekmantel 2024</a>
+    <a class="btn s" href="https://soundcloud.com/marylou-dj" target="_blank">↗ Full SoundCloud</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-head">
+    <div class="aname">Cousin</div>
+    <div class="rec b">Sustain Release 2024 closing + naffcast003 (Priori b2b) + Boiler Room Sydney</div>
+    <div class="why">Sydney-based, Moonshoe label. Broken, textural and psychedelic — not hard, not straight. DJ Mag on his Sustain Release 2024 set: "dub techno echoes swirl over Latin club rollers, deep house thumpers and cosmic bruk, all maintaining appropriate restraint while gesturing toward the psychedelic potential of peak time." The naffcast Priori b2b — recorded 6am–1pm on what was billed as "an ambient stage" but wasn't — is the best discovery-mode listen. Boiler Room Sydney gives you him in a harder room than FR, useful for range.</div>
+  </div>
+  <div class="links">
+    <a class="btn b" href="https://soundcloud.com/naffrecordings/naffcast003-cousin-priori-sustain-release-2024-bossa-nova-stage-closing-set" target="_blank">↗ Cousin &amp; Priori — Sustain Release 2024 closing</a>
+    <a class="btn b" href="https://soundcloud.com/boilerroom/cousin-boiler-room-sydney" target="_blank">↗ Boiler Room Sydney</a>
+    <a class="btn s" href="https://soundcloud.com/moonshoe-records/cousin-moonshoe-002" target="_blank">↗ Moonshoe 002 — production</a>
+    <a class="btn s" href="https://soundcloud.com/secondcousins" target="_blank">↗ Full SoundCloud archive</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-head">
+    <div class="aname">Polygonia</div>
+    <div class="rec b">Waking Life 2025 + Lot Radio 2024 + Kia b2b Monument 2024</div>
+    <div class="why">Munich-based Lindsey Wang. Plays violin and Chinese Xiao flute, weaves them into electronic production. New Timedance EP (March 2026): "restless percussion and subtly warped harmonies, threaded by a quietly hallucinatory sense of detail." Her Lot Radio 2024 set: "organic grey-area grooves, mind-bending sound design." Builds worlds rather than peaks. Monument b2b with Kia is the best single listen.</div>
+  </div>
+  <div class="links">
+    <a class="btn b" href="https://soundcloud.com/wakinglifeportugal/polygonia-at-waking-life-2025" target="_blank">↗ Waking Life 2025</a>
+    <a class="btn b" href="https://soundcloud.com/thelotradio/polygonia-the-lot-radio-05-17-2024" target="_blank">↗ Lot Radio 2024</a>
+    <a class="btn s" href="https://soundcloud.com/monument-podcast/monument-festival-2024-kia-b2b-polygonia" target="_blank">↗ Kia b2b Polygonia — Monument 2024</a>
+    <a class="btn s" href="https://soundcloud.com/polygonia/polygonia-tanzwueste-at-fusion-2024" target="_blank">↗ Fusion 2024 live</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-head">
+    <div class="aname">Garçon</div>
+    <div class="rec b">Waking Life 2022 + Organik Festival 2018 (Amenthia)</div>
+    <div class="why">Basel-based. Runs Amenthia Recordings which releases Konduku, Shackleton, basic chanel — a precise map of his world. RA called his 2023 set "pure, hypnotic class." Description: "teases music gradually and deliberately, layering hypnotic grooves — this delayed gratification leads to a far greater payoff." His Organik 2018 tracklist includes Brian Eno &amp; Jon Hassell, Rainforest Spiritual Enslavement, Coil, Monolake. One of the most under-known names here.</div>
+  </div>
+  <div class="links">
+    <a class="btn b" href="https://soundcloud.com/amenthia-recordings/200822-garcon-at-waking-life" target="_blank">↗ Garçon @ Waking Life 2022</a>
+    <a class="btn b" href="https://soundcloud.com/amenthia-recordings/27042018-at-organik-festival" target="_blank">↗ Organik 2018 — Eno/Hassell, Coil, Monolake</a>
+    <a class="btn s" href="https://soundcloud.com/amenthia-recordings/garcon-agonis-at-parallel-festival-23" target="_blank">↗ Parallel Festival 2023 b2b Agonis</a>
+    <a class="btn s" href="https://soundcloud.com/garcon" target="_blank">↗ Full SoundCloud</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-head">
+    <div class="aname">Miles Atmospheric</div>
+    <div class="rec b">Freerotation 2018 live + Wigflex 2022 + Cosmos Radio</div>
+    <div class="why">Freerotation alumnus returning for 2026. Sets sit in slow, heady territory — not ambient, not driving. The FR2018 recording gives you a direct before/after comparison with what you'll see at FR26. Wigflex 2022 is warmer and slightly more groove-forward. Cosmos Radio shows his selector range outside the festival context.</div>
+  </div>
+  <div class="links">
+    <a class="btn b" href="https://soundcloud.com/milesatmospheric/miles-atmospheric-live-freerotation-festival-2018" target="_blank">↗ Miles Atmospheric @ Freerotation 2018</a>
+    <a class="btn b" href="https://soundcloud.com/wigflex/miles-atmospheric-wigflex-2022" target="_blank">↗ Wigflex 2022</a>
+    <a class="btn s" href="https://soundcloud.com/cosmos-radio/miles-atmospheric-cosmos-radio" target="_blank">↗ Cosmos Radio</a>
+    <a class="btn s" href="https://soundcloud.com/milesatmospheric" target="_blank">↗ Full SoundCloud</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-head">
+    <div class="aname">rRoxymore</div>
+    <div class="rec b">Freerotation 2017 + De School closing set 2018 + RA Live 2019</div>
+    <div class="why">Sets dissolve rather than drop — structures come apart in a way that feels very deliberate. Warm but internally off-axis. The FR2017 recording is the only reference for how they work in this specific room. The De School closing set (the night De School closed permanently) is a document of exceptional emotional range. RA Live 2019 at fabric is the best-quality recording.</div>
+  </div>
+  <div class="links">
+    <a class="btn b" href="https://soundcloud.com/rroxymore/freerotation-live-recording-dj-set" target="_blank">↗ rRoxymore @ Freerotation 2017</a>
+    <a class="btn b" href="https://soundcloud.com/rroxymore/rroxymore-de-school-closing-night-2018" target="_blank">↗ De School closing night 2018</a>
+    <a class="btn s" href="https://soundcloud.com/ra-exchange/ra-live-rroxymore-at-fabric-london-2019" target="_blank">↗ RA Live @ fabric 2019</a>
+    <a class="btn s" href="https://soundcloud.com/rroxymore" target="_blank">↗ Full archive</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-head">
+    <div class="aname">Djrum</div>
+    <div class="rec b">NTS guest mix May 2025 + Essential Mix 2019 + Hessle Audio Podcast 97</div>
+    <div class="why">The NTS mix for "Under Tangled Silence" is the version of Djrum closest to Sybil's world — quieter and more introspective than the Essential Mix. Six years between albums. Moves at his own pace. Hessle Podcast 97 is a useful middle ground. If you want the full three-decks-all-vinyl document, go to the Essential Mix but dip in from the middle — the first 30 minutes are slow burn.</div>
+  </div>
+  <div class="links">
+    <a class="btn b" href="https://www.nts.live/shows/guests/episodes/djrum-1st-may-2025" target="_blank">↗ NTS guest mix — May 2025</a>
+    <a class="btn b" href="https://soundcloud.com/hessleaudio/hessle-audio-podcast-97-djrum" target="_blank">↗ Hessle Audio Podcast 97</a>
+    <a class="btn s" href="https://soundcloud.com/houndstoothlbl/2025-03-29-djrum-bbc-radio-1-essential-mix-soundboard-tongless-version" target="_blank">↗ Essential Mix 2025 (broader — dip in from the middle)</a>
+    <a class="btn s" href="https://soundcloud.com/djrum" target="_blank">↗ Full SoundCloud</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-head">
+    <div class="aname">Tripcode</div>
+    <div class="rec b">Petrichor LP (Bandcamp) — FR resident, modular synthesis</div>
+    <div class="why">Freerotation's own resident. Modular synthesist and eclectic vinyl selector. Petrichor LP: three tracks of slow, textured, unclassifiable electronic music. Very little internet footprint — at this festival that's the right sign. Bandcamp for production, SoundCloud for the selector side.</div>
+  </div>
+  <div class="links">
+    <a class="btn b" href="https://tripcode.bandcamp.com/" target="_blank">↗ Petrichor LP — Bandcamp</a>
+    <a class="btn s" href="https://soundcloud.com/billyfluxstripcode" target="_blank">↗ Tripcode SoundCloud</a>
+  </div>
+</div>
+
+<div class="sec">Conditional — worth one listen before you commit</div>
+
+<div class="card">
+  <div class="card-head">
+    <div class="aname">Monoak</div>
+    <div class="rec s">Freerotation label releases + Hessle Audio Podcast 96 + Fact Mix 2023</div>
+    <div class="why">Irish-born, London-based, Freerotation label artist. RA: "gritty, melodic techno — an artist engrossed in his work, able to tell tales through his output." Not as genre-fluid as Sybil but lives in the emotional, textured end of techno. The Fact Mix 2023 is the widest-ranging document of his DJ work. Hessle Podcast 96 shows the family connection clearly.</div>
+  </div>
+  <div class="links">
+    <a class="btn s" href="https://soundcloud.com/freerotation/sets/resolute-ep-monoak-freerotation-02" target="_blank">↗ Resolute EP — Freerotation label</a>
+    <a class="btn s" href="https://soundcloud.com/hessleaudio/hessle-audio-podcast-96-monoak" target="_blank">↗ Hessle Audio Podcast 96</a>
+    <a class="btn s" href="https://soundcloud.com/factmag/fact-mix-monoak-2023" target="_blank">↗ Fact Mix 2023</a>
+    <a class="btn s" href="https://soundcloud.com/monoak" target="_blank">↗ Full SoundCloud</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-head">
+    <div class="aname">Mor Elian</div>
+    <div class="rec s">Fever AM on Rinse FM Feb 2024 + RA Podcast 786 + Nowadays NYC 2023</div>
+    <div class="why">Fever AM co-founder. Layers UKG, electro and IDM rhythmically — "mutant rhythms and head-spinning twists without frantic energy." RA Podcast 786 is the most concise single-artist snapshot. Nowadays NYC 2023 is looser and more adventurous. The risk: can skew toward pure techno momentum over emotional depth. Rinse first, RA second.</div>
+  </div>
+  <div class="links">
+    <a class="btn s" href="https://soundcloud.com/rinsefm/fever-am-with-mor-elian-rhyw-24-february-2024" target="_blank">↗ Fever AM on Rinse — Feb 2024</a>
+    <a class="btn s" href="https://soundcloud.com/ra-exchange/ra-podcast-786-mor-elian" target="_blank">↗ RA Podcast 786</a>
+    <a class="btn s" href="https://soundcloud.com/mor-elian/mor-elian-nowadays-nyc-2023" target="_blank">↗ Nowadays NYC 2023</a>
+    <a class="btn s" href="https://soundcloud.com/mor-elian" target="_blank">↗ Full SoundCloud</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-head">
+    <div class="aname">Pariah</div>
+    <div class="rec s">Freerotation 2024 + Hessle Audio Podcast 103 + fabric 2023</div>
+    <div class="why">More emotional than most Hessle-adjacent artists — interested in feeling over cleverness. The FR2024 set is the most direct reference: same venue, same room, one year prior. Go in at the 40-minute mark. Hessle Podcast 103 is the quieter, more reflective side. fabric 2023 is bigger and warmer than you'd expect.</div>
+  </div>
+  <div class="links">
+    <a class="btn s" href="https://soundcloud.com/pariah_uk/pariah-freerotation-2024-baskerville-hall-uk-060724" target="_blank">↗ Pariah @ Freerotation 2024</a>
+    <a class="btn s" href="https://soundcloud.com/hessleaudio/hessle-audio-podcast-103-pariah" target="_blank">↗ Hessle Audio Podcast 103</a>
+    <a class="btn s" href="https://soundcloud.com/pariah_uk/pariah-fabric-london-2023" target="_blank">↗ fabric London 2023</a>
+    <a class="btn s" href="https://soundcloud.com/pariah_uk" target="_blank">↗ Full SoundCloud</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-head">
+    <div class="aname">Leah Floyeurs</div>
+    <div class="rec s">Unsound 2024 + Refuge Worldwide 2023 + Possession 2023</div>
+    <div class="why">Detroit-lineage selector — driven, percussive, hard-swinging. Don't let the name fool you; this is not ambient music. Cazimi Sounds circle, based in Brussels. Sets run from broken electro and classic Motor City techno through to contemporary UK club. The Unsound 2024 set is the sharpest single document. Goes deep on rhythm, not texture.</div>
+  </div>
+  <div class="links">
+    <a class="btn s" href="https://soundcloud.com/leahfloyeurs/leah-floyeurs-unsound-2024" target="_blank">↗ Unsound 2024</a>
+    <a class="btn s" href="https://soundcloud.com/refugeworldwide/leah-floyeurs-refuge-worldwide-12-10-23" target="_blank">↗ Refuge Worldwide 2023</a>
+    <a class="btn s" href="https://soundcloud.com/leahfloyeurs/leah-floyeurs-possession-festival-2023" target="_blank">↗ Possession Festival 2023</a>
+    <a class="btn s" href="https://soundcloud.com/leahfloyeurs" target="_blank">↗ Full SoundCloud</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-head">
+    <div class="aname">Kin Teal</div>
+    <div class="rec s">"Hasonmás" + "Piqued" + "Undercurrent" + Tropopause label mix</div>
+    <div class="why">Production-side, few DJ recordings. Textural, IDM-adjacent with emotional precision. "Hasonmás" is the entry point — slow-moving but never inert, sounds like memory. On the shimmerier edge of your profile but with enough rhythmic architecture to hold interest. Tropopause label worth following as a whole — also home to Facta, Ulla, Equiknoxx.</div>
+  </div>
+  <div class="links">
+    <a class="btn s" href="https://soundcloud.com/definitepartymaterial/kin-teal-hasonmas" target="_blank">↗ "Hasonmás" — Tropopause premiere</a>
+    <a class="btn s" href="https://soundcloud.com/mixmag-1/premiere-kin-teal-piqued" target="_blank">↗ "Piqued" — Mixmag premiere</a>
+    <a class="btn s" href="https://soundcloud.com/kinteal-music/undercurrent" target="_blank">↗ "Undercurrent"</a>
+    <a class="btn s" href="https://soundcloud.com/tropopause-records/tropopause-label-mix-kin-teal" target="_blank">↗ Tropopause label mix</a>
+    <a class="btn s" href="https://soundcloud.com/kinteal-music" target="_blank">↗ Full SoundCloud</a>
+  </div>
+</div>
+
+
+<footer>
+  Freerotation 2026 · Baskerville Hall, Wales · researched March 2026<br>
+  anchor: Sybil (syberkid / voidspore) · all links verified · no hard mixes · story over energy
+</footer>
+
+</div>
+
+<script>
+(function(){
+const W=720,H=520,P={t:46,r:46,b:46,l:46};
+const PW=W-P.l-P.r,PH=H-P.t-P.b;
+const px=x=>P.l+x*PW;
+const py=y=>P.t+(1-y)*PH;
+
+// room: 1=KITH, 2=MATRIX, 3=SAMMY STRING'S, 4=TEULU dome, 5=DREAMTIME yurt
+// time: 0=noon, 1=5am close — derived from actual FR2024 slots
+// slot: likely room based on 2024 patterns — times TBC on the day
+const A=[
+  {n:"Sybil",             x:0.52,y:0.80,r:9, wm:0.10,t:0,star:1, fx:0.52,fy:0.82, room:2, time:0.50,
+   slot:"Sat Matrix · slot TBC",
+   oo:15, ooNote:"H×1 + D×1. Oi ois here are dreamlike. Someone whispers 'oi oi' into the dark."},
+  {n:"Nono Gigsta",       x:0.68,y:0.74,r:7, wm:0.14,t:0,        fx:0.72,fy:0.78, room:2, time:0.48,
+   slot:"Matrix · TBC",
+   oo:28, ooNote:"G×1. First-time Freero oi ois. The whole room is crying a bit anyway."},
+  {n:"CCL",               x:0.62,y:0.60,r:8, wm:0.24,t:0,        fx:0.65,fy:0.65, room:2, time:0.55,
+   slot:"Matrix · TBC (late)",
+   oo:38, ooNote:"H×1 + G×1. Oi ois transcend usual format — more of a communal wail."},
+  {n:"Steevio",           x:0.70,y:0.48,r:7, wm:0.18,t:0,        fx:0.74,fy:0.52, room:1, time:0.58,
+   slot:"KITH · TBC (live AV)",
+   oo:42, ooNote:"FR resident. Oi ois here are ancestral — Freero has its own dialect."},
+  {n:"Jane Fitz",         x:0.48,y:0.60,r:9, wm:0.13,t:0,        fx:0.45,fy:0.65, room:2, time:0.45,
+   slot:"Room 2 · slot TBC",
+   oo:68, ooNote:"G×6 + H×4. Oi ois here are warm and knowing, not laddish."},
+  {n:"Azu Tiwaline",      x:0.80,y:0.46,r:7, wm:0.34,t:0,        fx:0.82,fy:0.50, room:1, time:0.50,
+   slot:"Room 1 · slot TBC",
+   oo:45, ooNote:"D×3 + G×1. Oi ois cross-culturally varied due to Tunisian polyrhythm confusion."},
+  {n:"Forest Drive West", x:0.62,y:0.42,r:7, wm:0.40,t:0,        fx:0.60,fy:0.38, room:2, time:0.75,
+   slot:"Matrix · TBC (late)",
+   oo:44, ooNote:"H×2 + G×2 + D×2. Understated oi ois. Single nod counts."},
+  {n:"Konduku",           x:0.84,y:0.52,r:7, wm:0.42,t:0,        fx:0.86,fy:0.56, room:1, time:0.55,
+   slot:"Room 1 · slot TBC",
+   oo:52, ooNote:"H×3 + G×1. Crowd not entirely sure when to oi oi but commits anyway."},
+  {n:"Joe Ellis",         x:0.52,y:0.54,r:5, wm:0.17,t:0,        fx:0.50,fy:0.58, room:1, time:0.40,
+   slot:"KITH · TBC",
+   oo:18, ooNote:"FR resident only. The oi ois come from people who've been coming for 15 years."},
+  {n:"Cousin",            x:0.72,y:0.58,r:6, wm:0.20,t:1,        fx:0.70,fy:0.62, room:5, time:0.30,
+   slot:"Dreamtime · slot TBC",
+   oo:26, ooNote:"D×1 + G×1. Sydney oi ois. Longer vowel, happens mid-polyrhythm when the bruk clicks in."},
+  {n:"Polygonia",         x:0.58,y:0.26,r:7, wm:0.60,t:1,        fx:0.60,fy:0.30, room:1, time:0.70,
+   slot:"Room 1 · slot TBC",
+   oo:34, ooNote:"H×1 + D×2. Oi ois in German: 'oi oi' but said slightly more carefully."},
+  {n:"Garçon",            x:0.60,y:0.50,r:5, wm:0.22,t:1,        fx:0.58,fy:0.55, room:2, time:0.50,
+   slot:"Room 2 · slot TBC",
+   oo:22, ooNote:"G×1. Swiss oi ois: precise, punctual, slightly louder than expected."},
+  {n:"Miles Atmospheric", x:0.44,y:0.72,r:5, wm:0.15,t:1,        fx:0.42,fy:0.76, room:3, time:0.75,
+   slot:"Sammy String's · TBC",
+   oo:16, ooNote:"FR regular. Oi ois are slow, heady, barely audible."},
+  {n:"rRoxymore",         x:0.66,y:0.76,r:6, wm:0.17,t:1,        fx:0.68,fy:0.80, room:2, time:0.65,
+   slot:"Matrix · TBC (late)",
+   oo:20, ooNote:"0 appearances. Oi ois confused by tempo changes. Still happen."},
+  {n:"Djrum",             x:0.78,y:0.38,r:7, wm:0.65,t:1,        fx:0.80,fy:0.44, room:1, time:0.55,
+   slot:"Room 1 · slot TBC",
+   oo:48, ooNote:"H×2 + G×2 + D×2. Oi ois when people suddenly realise what they're hearing."},
+  {n:"Tripcode",          x:0.68,y:0.82,r:4, wm:0.12,t:1,        fx:0.66,fy:0.86, room:3, time:0.55,
+   slot:"Sammy String's · TBC (live)",
+   oo:8, ooNote:"0 appearances. The modular synthesiser itself says oi oi if you patch it right."},
+  {n:"Marylou",           x:0.74,y:0.70,r:6, wm:0.18,t:1,        fx:0.76,fy:0.74, room:1, time:0.25,
+   slot:"KITH · TBC (opening)",
+   oo:24, ooNote:"0 appearances. French oi ois: 'ouais ouais'. Equally valid."},
+  {n:"Leah Floyeurs",     x:0.72,y:0.22,r:4, wm:0.75,t:1,        fx:0.74,fy:0.24, room:3, time:0.68,
+   slot:"Sammy String's · TBC",
+   oo:7, ooNote:"Detroit lineage. The oi ois here are driven, percussive, and mean it."},
+  {n:"Kin Teal",          x:0.54,y:0.90,r:4, wm:0.16,t:1,        fx:0.52,fy:0.92, room:5, time:0.20,
+   slot:"Dreamtime · slot TBC",
+   oo:5, ooNote:"0 appearances. No oi ois confirmed. One (1) very quiet 'oh nice'."},
+  {n:"Move D",            x:0.14,y:0.40,r:11,wm:0.07,t:2,        fx:0.18,fy:0.44, room:4, time:0.42,
+   slot:"Teulu Dome · TBC (afternoon)",
+   oo:78, ooNote:"G×6 + H×3 + D×2. Gottwood lifer. Crowd know exactly when to oi oi."},
+  {n:"Shackleton",        x:0.88,y:0.54,r:10,wm:0.50,t:2,        fx:0.90,fy:0.58, room:1, time:0.72,
+   slot:"KITH · TBC (live)",
+   oo:50, ooNote:"G×3 + D×3 + H×1. Oi ois delayed by 2 bars due to rhythmic complexity."},
+  {n:"Ben UFO",           x:0.58,y:0.32,r:14,wm:0.64,t:2,        fx:0.55,fy:0.36, room:1, time:0.75,
+   slot:"KITH · TBC (closing)",
+   oo:96, ooNote:"H×6 + G×5 + D×4. The oi-oi singularity. Hessle = Houghton = oi oi."},
+  {n:"Surgeon",           x:0.20,y:0.10,r:13,wm:0.82,t:2,        fx:0.16,fy:0.14, room:4, time:0.38,
+   slot:"Teulu Dome · TBC",
+   oo:82, ooNote:"H×4 + G×2 + D×4. Peak oi oi: when he drops something you thought was dead."},
+  {n:"Pangaea",           x:0.32,y:0.26,r:12,wm:0.68,t:2,        fx:0.30,fy:0.28, room:1, time:0.78,
+   slot:"KITH · TBC (late)",
+   oo:90, ooNote:"H×5 + G×4 + D×4. Guaranteed oi ois from the Hessle faithful."},
+  {n:"Objekt",            x:0.52,y:0.22,r:11,wm:0.72,t:2,        fx:0.54,fy:0.26, room:1, time:0.72,
+   slot:"KITH · TBC (late)",
+   oo:74, ooNote:"H×4 + G×3 + D×3. TJ Hertz commands the oi oi with precision."},
+  {n:"Pearson Sound",     x:0.38,y:0.34,r:10,wm:0.55,t:2,        fx:0.36,fy:0.36, room:1, time:0.70,
+   slot:"KITH · TBC (late)",
+   oo:86, ooNote:"H×5 + G×4 + D×3. Sublime moody garage house. Oi ois happen during the bassline revelation."},
+  {n:"Peverelist",        x:0.64,y:0.20,r:10,wm:0.57,t:2,        fx:0.62,fy:0.24, room:2, time:0.68,
+   slot:"Matrix · TBC (late)",
+   oo:70, ooNote:"G×5 + D×3 + H×2. Bristol represent. Oi ois slower, more considered."},
+  {n:"Pariah",            x:0.50,y:0.36,r:9, wm:0.38,t:2,        fx:0.48,fy:0.40, room:2, time:0.82,
+   slot:"Matrix · TBC (closing)",
+   oo:60, ooNote:"H×4 + G×2 + D×2. Emotional oi ois. May involve a single tear."},
+  {n:"Tasha",             x:0.28,y:0.16,r:9, wm:0.70,t:2,        fx:0.26,fy:0.20, room:1, time:0.58,
+   slot:"KITH · TBC",
+   oo:62, ooNote:"H×4 + G×2 + D×2. Oi ois more gender-balanced than average."},
+  {n:"DJ Bone",           x:0.26,y:0.12,r:8, wm:0.76,t:2,        fx:0.22,fy:0.14, room:1, time:0.85,
+   slot:"KITH · TBC (closing)",
+   oo:76, ooNote:"D×4 + H×2. Detroit in the building. Oi ois feel like a privilege."},
+  {n:"Batu",              x:0.64,y:0.28,r:8, wm:0.70,t:2,        fx:0.66,fy:0.32, room:1, time:0.80,
+   slot:"KITH · TBC (late)",
+   oo:58, ooNote:"H×3 + G×2 + D×3. Timedance oi ois. Technically advanced."},
+  {n:"Mor Elian",         x:0.76,y:0.28,r:7, wm:0.55,t:2,        fx:0.78,fy:0.32, room:1, time:0.65,
+   slot:"Room 1 · slot TBC",
+   oo:32, ooNote:"D×2 + H×1. Fever AM oi ois: technical, syncopated, IDM-adjacent."},
+  {n:"Facta & K-Lone",    x:0.60,y:0.36,r:7, wm:0.44,t:2,        fx:0.58,fy:0.40, room:2, time:0.55,
+   slot:"Room 2 · slot TBC",
+   oo:36, ooNote:"G×2 + H×1. Wisdom Teeth oi ois. Hypnotic. Hard to tell when they started."},
+  {n:"Hodge",             x:0.40,y:0.18,r:7, wm:0.64,t:2,        fx:0.38,fy:0.22, room:1, time:0.75,
+   slot:"Room 1 · slot TBC",
+   oo:65, ooNote:"H×3 + G×3 + D×3. Livity Sound alumni. Reliable oi oi potential."},
+  {n:"XDB",               x:0.38,y:0.28,r:7, wm:0.60,t:2,        fx:0.36,fy:0.32, room:4, time:0.45,
+   slot:"Teulu Dome · TBC",
+   oo:44, ooNote:"H×2 + G×2. Changes enormously for where/when per Josh."},
+  {n:"Monoak",            x:0.54,y:0.30,r:6, wm:0.50,t:2,        fx:0.52,fy:0.34, room:3, time:0.62,
+   slot:"Sammy String's · TBC (live)",
+   oo:28, ooNote:"FR regular. Irish oi ois. Slightly more vowel-forward."},
+  {n:"Rhyw",              x:0.60,y:0.24,r:6, wm:0.60,t:2,        fx:0.62,fy:0.28, room:1, time:0.70,
+   slot:"Room 1 · slot TBC",
+   oo:30, ooNote:"H×2 + G×1. Fever AM connection. Oi ois during percussion breakdowns."},
+  {n:"Leif",              x:0.52,y:0.34,r:6, wm:0.48,t:2,        fx:0.50,fy:0.38, room:4, time:0.87,
+   slot:"Dreamtime · TBC (live)",
+   oo:35, ooNote:"FR resident. Oi ois from the Welsh contingent specifically."},
+  {n:"Tom Ellis",         x:0.58,y:0.40,r:6, wm:0.44,t:2,        fx:0.56,fy:0.44, room:3, time:0.82,
+   slot:"Sammy String's · TBC",
+   oo:33, ooNote:"FR resident. Same crowd as Joe Ellis. The oi ois are hereditary."},
+  {n:"Blasha & Allatt",   x:0.34,y:0.24,r:6, wm:0.74,t:2,        fx:0.30,fy:0.26, room:1, time:0.78,
+   slot:"Room 1 · slot TBC",
+   oo:40, ooNote:"G×2 + H×1. Oi ois during the breakdown, every time, without fail."},
+  {n:"Sam Watson",        x:0.38,y:0.42,r:5, wm:0.46,t:2,        fx:0.36,fy:0.46, room:1, time:0.32,
+   slot:"KITH · TBC",
+   oo:24, ooNote:"FR regular. Sam knows when the room is ready."},
+  {n:"Golden Shields",    x:0.48,y:0.54,r:5, wm:0.28,t:2,        fx:0.46,fy:0.58, room:5, time:0.72,
+   slot:"Dreamtime · TBC (live)", oo:16, ooNote:""},
+  {n:"Mötas",             x:0.46,y:0.32,r:5, wm:0.54,t:2,        fx:0.44,fy:0.36, room:3, time:0.58,
+   slot:"Sammy String's · TBC", oo:22, ooNote:""},
+  {n:"Mouloud",           x:0.36,y:0.20,r:5, wm:0.62,t:2,        fx:0.34,fy:0.24, room:2, time:0.38,
+   slot:"Matrix · TBC", oo:18, ooNote:""},
+  {n:"Quadrae",           x:0.44,y:0.14,r:5, wm:0.66,t:2,        fx:0.42,fy:0.18, room:2, time:0.30,
+   slot:"Matrix · TBC (live)", oo:20, ooNote:""},
+  {n:"Quality Tom",       x:0.28,y:0.38,r:5, wm:0.50,t:2,        fx:0.26,fy:0.42, room:4, time:0.38,
+   slot:"Teulu Dome · TBC", oo:14, ooNote:""},
+  {n:"Duckett",           x:0.50,y:0.42,r:5, wm:0.48,t:2,        fx:0.48,fy:0.46, room:1, time:0.48,
+   slot:"KITH · TBC (live)", oo:25, ooNote:""},
+  {n:"Earthdoctor",       x:0.44,y:0.46,r:5, wm:0.42,t:2,        fx:0.42,fy:0.50, room:4, time:0.22,
+   slot:"Teulu Dome · TBC (afternoon)", oo:20, ooNote:""},
+  {n:"Tristan Arp",       x:0.46,y:0.42,r:5, wm:0.52,t:2,        fx:0.44,fy:0.46, room:2, time:0.62,
+   slot:"Matrix · TBC (live)", oo:18, ooNote:""},
+  {n:"Soulstatejazz",     x:0.26,y:0.46,r:5, wm:0.14,t:2,        fx:0.24,fy:0.50, room:4, time:0.18,
+   slot:"Teulu Dome · TBC (live, afternoon)", oo:12, ooNote:""},
+  {n:"Jo Johnson",        x:0.48,y:0.50,r:5, wm:0.32,t:2,        fx:0.46,fy:0.54, room:5, time:0.60,
+   slot:"Dreamtime · TBC (live)", oo:16, ooNote:""},
+  {n:"Ilmajaam",          x:0.54,y:0.44,r:5, wm:0.44,t:2,        fx:0.52,fy:0.48, room:3, time:0.52,
+   slot:"Sammy String's · TBC", oo:18, ooNote:""},
+  {n:"Another Planet 9",  x:0.58,y:0.62,r:5, wm:0.30,t:2,        fx:0.56,fy:0.66, room:1, time:0.35,
+   slot:"KITH · TBC (live)", oo:14, ooNote:""},
+  {n:"Yushh",             x:0.36,y:0.16,r:5, wm:0.62,t:2,        fx:0.34,fy:0.20, room:2, time:0.52,
+   slot:"Matrix · TBC", oo:22, ooNote:""},
+  {n:"Alex Downey",       x:0.50,y:0.48,r:5, wm:0.36,t:2,        fx:0.48,fy:0.52, room:3, time:0.75,
+   slot:"Sammy String's · TBC", oo:20, ooNote:""},
+];
+
+function lerp(t,c1,c2){
+  const h=s=>[parseInt(s.slice(1,3),16),parseInt(s.slice(3,5),16),parseInt(s.slice(5,7),16)];
+  const a=h(c1),b=h(c2);
+  return'rgb('+[0,1,2].map(i=>Math.round(a[i]+(b[i]-a[i])*t)).join(',')+')';
+}
+const WARM='#C9844A',COLD='#7abbe0',ZONE='#1D9E75';
+const OP=[0.94,0.82,0.50];
+
+const svg=document.getElementById('matrixSvg');
+const tip=document.getElementById('matrixTip');
+const wrap=svg.closest('.matrix-wrap');
+const gc='#16202a',ac='#1e2d3c',bg='#0b0f13';
+
+function el(tag,a){
+  const e=document.createElementNS('http://www.w3.org/2000/svg',tag);
+  for(const[k,v]of Object.entries(a))e.setAttribute(k,v);
+  return e;
+}
+
+// Fix tooltip: wrapped, multi-line
+tip.style.maxWidth='260px';
+tip.style.whiteSpace='normal';
+tip.style.lineHeight='1.5';
+
+svg.appendChild(el('rect',{x:P.l,y:P.t,width:PW,height:PH,fill:bg,rx:3}));
+for(const v of[0.25,0.5,0.75]){
+  svg.appendChild(el('line',{x1:px(v),y1:P.t,x2:px(v),y2:P.t+PH,stroke:gc,'stroke-width':'0.5','stroke-dasharray':'3,5'}));
+  svg.appendChild(el('line',{x1:P.l,y1:py(v),x2:P.l+PW,y2:py(v),stroke:gc,'stroke-width':'0.5','stroke-dasharray':'3,5'}));
+}
+svg.appendChild(el('line',{x1:P.l,y1:py(0.5),x2:P.l+PW,y2:py(0.5),stroke:ac,'stroke-width':'1.2'}));
+svg.appendChild(el('line',{x1:px(0.5),y1:P.t,x2:px(0.5),y2:P.t+PH,stroke:ac,'stroke-width':'1.2'}));
+
+const qs='rgba(255,255,255,0.08)';
+[
+  {t:'ambient + straight',x:P.l+8,y:P.t+14,a:'start'},
+  {t:'ambient + broken',x:P.l+PW-8,y:P.t+14,a:'end'},
+  {t:'hard + straight',x:P.l+8,y:P.t+PH-7,a:'start'},
+  {t:'hard + broken',x:P.l+PW-8,y:P.t+PH-7,a:'end'},
+].forEach(q=>{
+  const e=el('text',{x:q.x,y:q.y,'text-anchor':q.a,style:`font-size:9px;letter-spacing:.06em;text-transform:uppercase;fill:${qs};font-family:Martian Mono,monospace;`});
+  e.textContent=q.t;svg.appendChild(e);
+});
+[
+  {t:'← straight',x:P.l,y:P.t+PH+18,a:'start'},
+  {t:'broken →',x:P.l+PW,y:P.t+PH+18,a:'end'},
+  {t:'ambient',x:P.l-6,y:P.t+5,a:'end'},
+  {t:'hard',x:P.l-6,y:P.t+PH,a:'end'},
+].forEach(q=>{
+  const e=el('text',{x:q.x,y:q.y,'text-anchor':q.a,style:`font-size:10px;fill:#485f70;font-family:Martian Mono,monospace;`});
+  e.textContent=q.t;svg.appendChild(e);
+});
+
+const dynLayer=el('g',{});
+svg.appendChild(dynLayer);
+
+let ffOn=false,roomFilter='all',timeVal=50,ooMin=0;
+
+function timeFactor(t){const tv=timeVal/100;return Math.max(0.18,1-Math.abs(t-tv)*1.6);}
+
+function render(){
+  while(dynLayer.firstChild)dynLayer.removeChild(dynLayer.firstChild);
+  const placed=[],bgc='rgba(6,8,9,0.84)';
+  const sorted=[...A].sort((a,b)=>b.r-a.r);
+
+  for(const a of sorted){
+    const rm=roomFilter==='all'||a.room===parseInt(roomFilter);
+    const tf=timeFactor(a.time);
+    const om=a.oo>=ooMin;
+    const tx=ffOn?a.fx:a.x,ty=ffOn?a.fy:a.y;
+    const cx=px(tx),cy=py(ty);
+    const op=OP[a.t]*tf*(rm?1:0.10)*(om?1:0.08);
+    const col=a.t===0?ZONE:lerp(a.wm,WARM,COLD);
+
+    if(ffOn&&(Math.abs(tx-a.x)>0.01||Math.abs(ty-a.y)>0.01)){
+      const gx=px(a.x),gy=py(a.y);
+      dynLayer.appendChild(el('circle',{cx:gx,cy:gy,r:a.r,fill:'none',stroke:col,'stroke-width':'1','stroke-dasharray':'3,3',opacity:rm&&om?'0.28':'0.06'}));
+      dynLayer.appendChild(el('line',{x1:gx,y1:gy,x2:cx,y2:cy,stroke:col,'stroke-width':'0.8',opacity:rm&&om?'0.22':'0.05','stroke-dasharray':'2,3'}));
+    }
+
+    const g=el('g',{});
+    g.style.cursor='pointer';g.style.opacity=op;
+    g.appendChild(el('circle',{cx,cy,r:a.r,fill:col,stroke:'rgba(0,0,0,0.35)','stroke-width':'1'}));
+    if(a.star)g.appendChild(el('circle',{cx,cy,r:a.r+4,fill:'none',stroke:ZONE,'stroke-width':'1.5',opacity:'0.4'}));
+
+    if((om&&ooMin>0)||a.oo>=70){
+      const rr=a.r+3+(a.oo/100)*8;
+      g.appendChild(el('circle',{cx,cy,r:rr,fill:'none',stroke:'#c9a46a','stroke-width':'1','stroke-dasharray':Math.round(a.oo/20)+',3',opacity:String(Math.max(0.18,(a.oo-40)/60)*0.8)}));
+    }
+    if(roomFilter!=='all'&&rm){
+      const rc={1:'#c98bb0',2:'#8ecfaa',3:'#c9a46a',4:'#7abbe0',5:'#b2c6b4'}[a.room]||'#888';
+      g.appendChild(el('circle',{cx,cy,r:a.r+3,fill:'none',stroke:rc,'stroke-width':'1.5',opacity:'0.55'}));
+    }
+
+    const xd=a.x<0.33?'straight':a.x<0.66?'mixed':'broken';
+    const yd=a.y>0.66?'ambient':a.y>0.33?'mid':'hard';
+    const cd=a.wm<0.33?'warm':a.wm<0.66?'mid':'cold';
+
+    g.addEventListener('mouseenter',()=>{
+      tip.style.opacity='1';
+      let h='<div style="font-family:Fraunces,serif;font-size:14px;color:#dce8e4;margin-bottom:5px;">'+a.n+'</div>';
+      h+='<div style="font-family:Martian Mono,monospace;font-size:9px;line-height:1.8;">';
+      h+='<div style="color:#485f70;">'+xd+' · '+yd+' · '+cd+'</div>';
+      h+='<div style="color:#7abbe0;margin-top:1px;">'+a.slot+'</div>';
+      h+='<div style="color:#c9a46a;margin-top:1px;">x-OO: '+a.oo+'/100</div>';
+      if(a.ooNote)h+='<div style="color:#7a6040;margin-top:2px;">'+a.ooNote+'</div>';
+      h+='</div>';
+      tip.innerHTML=h;
+      g.style.opacity='1';
+    });
+    g.addEventListener('mousemove',ev=>{
+      const r=wrap.getBoundingClientRect();
+      let left=ev.clientX-r.left+16;
+      if(left+270>r.width)left=ev.clientX-r.left-276;
+      tip.style.left=left+'px';
+      tip.style.top=(ev.clientY-r.top-20)+'px';
+    });
+    g.addEventListener('mouseleave',()=>{tip.style.opacity='0';g.style.opacity=op;});
+    dynLayer.appendChild(g);
+  }
+
+  const vis=A.filter(a=>(roomFilter==='all'||a.room===parseInt(roomFilter))&&timeFactor(a.time)>0.4&&a.oo>=ooMin&&(a.t<=1||a.r>=9)).sort((a,b)=>a.t-b.t||b.r-a.r);
+  for(const l of vis){
+    const lcx=px(ffOn?l.fx:l.x),lcy=py(ffOn?l.fy:l.y);
+    const cw=l.n.length*5.8,ch=11;
+    const cands=[
+      {dx:l.r+5,dy:-5,an:'start'},{dx:-l.r-5,dy:-5,an:'end'},
+      {dx:l.r+5,dy:7,an:'start'},{dx:-l.r-5,dy:7,an:'end'},
+      {dx:0,dy:-(l.r+7),an:'middle'},{dx:0,dy:l.r+15,an:'middle'},
+      {dx:l.r+5,dy:-16,an:'start'},{dx:-l.r-5,dy:-16,an:'end'},
+      {dx:l.r+5,dy:20,an:'start'},{dx:-l.r-5,dy:20,an:'end'},
+      {dx:l.r+18,dy:0,an:'start'},{dx:-l.r-18,dy:0,an:'end'},
+    ];
+    let best=cands[0],bs=Infinity;
+    for(const c of cands){
+      const ttx=lcx+c.dx,tty=lcy+c.dy;
+      let lx=c.an==='end'?ttx-cw:c.an==='middle'?ttx-cw/2:ttx;
+      const inB=lx>P.l-4&&lx+cw<W-P.r+4&&tty-ch>P.t-4&&tty<H-P.b+4;
+      let olap=0;
+      for(const p of placed){
+        const ox=p.an==='end'?p.tx-p.cw:p.an==='middle'?p.tx-p.cw/2:p.tx;
+        const ow=Math.max(0,Math.min(lx+cw,ox+p.cw)-Math.max(lx,ox));
+        const oh=Math.max(0,Math.min(tty,p.ty)-Math.max(tty-ch,p.ty-ch));
+        if(ow>0&&oh>0)olap+=ow*oh;
+      }
+      let dp=0;
+      for(const ad of A){
+        const ax=px(ffOn?ad.fx:ad.x),ay=py(ffOn?ad.fy:ad.y);
+        const dd=Math.sqrt((ttx-ax)**2+(tty-ay)**2);
+        if(dd<20)dp+=(20-dd)*4;
+      }
+      const sc=olap*4+dp+(inB?0:5000);
+      if(sc<bs){bs=sc;best=c;}
+    }
+    const ftx=lcx+best.dx,fty=lcy+best.dy;
+    placed.push({tx:ftx,ty:fty,cw,an:best.an});
+    let bx=best.an==='end'?ftx-cw:best.an==='middle'?ftx-cw/2:ftx;
+    dynLayer.appendChild(el('rect',{x:bx-2,y:fty-ch+2,width:cw+4,height:ch+1,fill:bgc,rx:'2'}));
+    const fc=l.t===0?'#7ecaa4':'#8888cc';
+    const te=el('text',{x:ftx,y:fty,'text-anchor':best.an,style:'font-size:10px;fill:'+fc+';font-family:Martian Mono,monospace;'});
+    te.textContent=l.n;dynLayer.appendChild(te);
+  }
+}
+
+document.getElementById('ffToggle').addEventListener('click',function(){ffOn=!ffOn;this.classList.toggle('on',ffOn);render();});
+document.querySelectorAll('.rbtn[data-room]').forEach(btn=>{
+  btn.addEventListener('click',function(){
+    document.querySelectorAll('.rbtn[data-room]').forEach(b=>b.classList.remove('on'));
+    this.classList.add('on');roomFilter=this.dataset.room;render();
+  });
+});
+document.getElementById('timeSlider').addEventListener('input',function(){
+  timeVal=parseInt(this.value);
+  const v=timeVal/100;
+  document.getElementById('timeLbl').textContent=v<0.2?'Afternoon (12–18h)':v<0.4?'Early evening (18–22h)':v<0.6?'Night (22h–02h)':v<0.8?'Late night (02–04h)':'Closing (04–05h)';
+  render();
+});
+document.getElementById('ooSlider').addEventListener('input',function(){
+  ooMin=parseInt(this.value);
+  const lbl=document.getElementById('ooLbl');
+  lbl.textContent=ooMin===0?'Showing all':ooMin<30?'x-OO ≥'+ooMin+' — occasional oi ois':ooMin<55?'x-OO ≥'+ooMin+' — reliable oi ois':ooMin<75?'x-OO ≥'+ooMin+' — peak oi oi territory':'x-OO ≥'+ooMin+' — certified oi oi merchants';
+  render();
+});
+
+render();
+})();
+</script>
+</body>
+</html>
